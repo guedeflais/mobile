@@ -23,6 +23,19 @@ export interface MeResult {
   balanceCents: number;
 }
 
+export type TransactionType = "PURCHASE" | "PAYMENT" | "CONVERSION" | "EXPIRY";
+export type TransactionStatus = "PENDING" | "COMPLETED" | "REJECTED";
+
+export interface TransactionItem {
+  id: string;
+  type: TransactionType;
+  status: TransactionStatus;
+  amountCents: number;
+  isOutgoing: boolean;
+  counterpartyLabel: string | null;
+  createdAt: string;
+}
+
 async function parseOrThrow(response: Response) {
   const data = await response.json().catch(() => null);
   if (!response.ok) {
@@ -61,6 +74,13 @@ export async function logout(token: string): Promise<void> {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
   });
+}
+
+export async function fetchTransactions(token: string): Promise<{ transactions: TransactionItem[] }> {
+  const response = await fetch(`${API_BASE_URL}/api/mobile/transactions`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return parseOrThrow(response);
 }
 
 export async function payMerchant(

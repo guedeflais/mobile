@@ -1,16 +1,18 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import * as api from "./api";
-import type { MobileUser } from "./api";
+import type { MobileUser, TransactionItem } from "./api";
 import { clearToken, getToken, setToken } from "./secureStorage";
 
 interface AuthState {
   isLoading: boolean;
   user: MobileUser | null;
   balanceCents: number | null;
+  transactions: TransactionItem[];
   loginWithPin: (memberNumber: string, pin: string) => Promise<void>;
   loginWithPassword: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshBalance: () => Promise<void>;
+  refreshTransactions: () => Promise<void>;
   pay: (merchantCode: string, amountEuros: number) => Promise<void>;
 }
 
@@ -21,6 +23,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setTokenState] = useState<string | null>(null);
   const [user, setUser] = useState<MobileUser | null>(null);
   const [balanceCents, setBalanceCents] = useState<number | null>(null);
+  const [transactions, setTransactions] = useState<TransactionItem[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -31,6 +34,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setTokenState(stored);
           setUser(me.user);
           setBalanceCents(me.balanceCents);
+          const { transactions: items } = await api.fetchTransactions(stored);
+          setTransactions(items);
         } catch {
           await clearToken();
         }
@@ -45,6 +50,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const me = await api.fetchMe(result.token);
     setUser(me.user);
     setBalanceCents(me.balanceCents);
+    const { transactions: items } = await api.fetchTransactions(result.token);
+    setTransactions(items);
   }, []);
 
   const handleLoginWithPin = useCallback(
@@ -71,6 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setTokenState(null);
     setUser(null);
     setBalanceCents(null);
+    setTransactions([]);
   }, [token]);
 
   const refreshBalance = useCallback(async () => {
@@ -79,13 +87,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setBalanceCents(me.balanceCents);
   }, [token]);
 
+  const refreshTransactions = useCallback(async () => {
+    if (!token) return;
+    const { transactions: items } = await api.fetchTransactions(token);
+    setTransactions(items);
+  }, [token]);
+
   const pay = useCallback(
     async (merchantCode: string, amountEuros: number) => {
       if (!token) throw new Error("Non authentifié.");
       await api.payMerchant(token, merchantCode, amountEuros);
       await refreshBalance();
+      await refreshTransactions();
     },
-    [token, refreshBalance],
+    [token, refreshBalance, refreshTransactions],
   );
 
   return (
@@ -94,10 +109,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         user,
         balanceCents,
+        transactions,
         loginWithPin: handleLoginWithPin,
         loginWithPassword: handleLoginWithPassword,
         logout: handleLogout,
         refreshBalance,
+        refreshTransactions,
         pay,
       }}
     >
