@@ -11,9 +11,9 @@ import {
   View,
 } from "react-native";
 import { CameraView, useCameraPermissions, type BarcodeScanningResult } from "expo-camera";
-import { Butterfly } from "../components/Butterfly";
-import { colors } from "../constants/theme";
-import { useAuth } from "../lib/auth";
+import { Butterfly } from "../../components/Butterfly";
+import { colors } from "../../constants/theme";
+import { useAuth } from "../../lib/auth";
 
 export default function Payer() {
   const { pay } = useAuth();
