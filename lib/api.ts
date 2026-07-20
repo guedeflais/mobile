@@ -23,7 +23,7 @@ export interface MeResult {
 async function parseOrThrow(response: Response) {
   const data = await response.json().catch(() => null);
   if (!response.ok) {
-    throw new Error(data?.error ?? "Une erreur est survenue.");
+    throw new Error(typeof data?.error === "string" ? data.error : "Une erreur est survenue.");
   }
   return data;
 }
@@ -58,4 +58,17 @@ export async function logout(token: string): Promise<void> {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
   });
+}
+
+export async function payMerchant(
+  token: string,
+  merchantCode: string,
+  amountEuros: number,
+): Promise<{ id: string }> {
+  const response = await fetch(`${API_BASE_URL}/api/mobile/pay`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ merchantCode, amountEuros }),
+  });
+  return parseOrThrow(response);
 }

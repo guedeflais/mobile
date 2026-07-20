@@ -11,6 +11,7 @@ interface AuthState {
   loginWithPassword: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshBalance: () => Promise<void>;
+  pay: (merchantCode: string, amountEuros: number) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -78,6 +79,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setBalanceCents(me.balanceCents);
   }, [token]);
 
+  const pay = useCallback(
+    async (merchantCode: string, amountEuros: number) => {
+      if (!token) throw new Error("Non authentifié.");
+      await api.payMerchant(token, merchantCode, amountEuros);
+      await refreshBalance();
+    },
+    [token, refreshBalance],
+  );
+
   return (
     <AuthContext.Provider
       value={{
@@ -88,6 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loginWithPassword: handleLoginWithPassword,
         logout: handleLogout,
         refreshBalance,
+        pay,
       }}
     >
       {children}

@@ -31,8 +31,11 @@ export default function Home() {
       <Text style={styles.title}>Bonjour {user.fullName}</Text>
       <Text style={styles.balanceLabel}>Solde disponible</Text>
       <Text style={styles.balance}>{formatGatinelles(balanceCents ?? 0)}</Text>
-      <Pressable style={styles.button} onPress={logout}>
-        <Text style={styles.buttonText}>Se déconnecter</Text>
+      <Pressable style={styles.button} onPress={() => router.push("/payer")}>
+        <Text style={styles.buttonText}>Payer un commerçant</Text>
+      </Pressable>
+      <Pressable style={styles.logoutButton} onPress={logout}>
+        <Text style={styles.logoutButtonText}>Se déconnecter</Text>
       </Pressable>
     </View>
   );
@@ -43,6 +46,16 @@ const styles = StyleSheet.create({
   title: { fontSize: 22, fontWeight: "600", color: colors.brand700, marginBottom: 24, textAlign: "center" },
   balanceLabel: { fontSize: 14, color: colors.foreground },
   balance: { fontSize: 40, fontWeight: "700", color: colors.leaf700, marginBottom: 32 },
-  button: { backgroundColor: colors.brand800, borderRadius: 8, paddingVertical: 12, paddingHorizontal: 24 },
+  button: {
+    backgroundColor: colors.brand700,
+    borderRadius: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    marginBottom: 12,
+    minWidth: 220,
+    alignItems: "center",
+  },
   buttonText: { color: "#fff", fontSize: 15, fontWeight: "600" },
+  logoutButton: { paddingVertical: 10, paddingHorizontal: 24 },
+  logoutButtonText: { color: colors.brand800, fontSize: 14 },
 });

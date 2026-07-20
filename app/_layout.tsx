@@ -9,6 +9,7 @@ export default function RootLayout() {
       <Stack screenOptions={{ headerStyle: { backgroundColor: "#4f8fc0" }, headerTintColor: "#fff" }}>
         <Stack.Screen name="index" options={{ title: "La Gâtinelle" }} />
         <Stack.Screen name="login" options={{ title: "Connexion" }} />
+        <Stack.Screen name="payer" options={{ title: "Payer un commerçant" }} />
       </Stack>
     </AuthProvider>
   );
