@@ -47,7 +47,6 @@ export default function TabsLayout() {
           title: "Payer un commerçant",
           tabBarLabel: "Payer",
           tabBarIcon: ({ color, size }) => <Ionicons name="send-outline" color={color} size={size} />,
-          href: isCommercant ? null : undefined,
         }}
       />
       <Tabs.Screen
