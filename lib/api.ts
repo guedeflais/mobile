@@ -7,6 +7,9 @@ export interface MobileUser {
   accountType: string;
   staffRole: string | null;
   merchantId: string | null;
+  // Absent de la réponse de connexion (/api/mobile/login), présent via
+  // /api/mobile/me — auth.tsx recharge le profil complet après connexion.
+  merchantCode?: string | null;
 }
 
 export interface LoginResult {

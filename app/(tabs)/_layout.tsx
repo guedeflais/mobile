@@ -23,6 +23,8 @@ export default function TabsLayout() {
     );
   }
 
+  const isCommercant = user.accountType === "COMMERCANT";
+
   return (
     <Tabs
       screenOptions={{
@@ -45,6 +47,16 @@ export default function TabsLayout() {
           title: "Payer un commerçant",
           tabBarLabel: "Payer",
           tabBarIcon: ({ color, size }) => <Ionicons name="send-outline" color={color} size={size} />,
+          href: isCommercant ? null : undefined,
+        }}
+      />
+      <Tabs.Screen
+        name="recevoir"
+        options={{
+          title: "Recevoir un paiement",
+          tabBarLabel: "Recevoir",
+          tabBarIcon: ({ color, size }) => <Ionicons name="qr-code-outline" color={color} size={size} />,
+          href: isCommercant ? undefined : null,
         }}
       />
       <Tabs.Screen
