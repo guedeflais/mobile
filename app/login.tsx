@@ -111,6 +111,10 @@ export default function Login() {
       <Pressable style={styles.button} onPress={handleSubmit} disabled={submitting}>
         {submitting ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Se connecter</Text>}
       </Pressable>
+
+      <Pressable style={styles.linkButton} onPress={() => router.push("/register")}>
+        <Text style={styles.linkButtonText}>Créer un compte</Text>
+      </Pressable>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -145,4 +149,6 @@ const styles = StyleSheet.create({
   error: { color: "#b00020", marginBottom: 12, textAlign: "center" },
   button: { backgroundColor: colors.brand700, borderRadius: 8, padding: 14, alignItems: "center" },
   buttonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  linkButton: { marginTop: 16, alignItems: "center" },
+  linkButtonText: { color: colors.brand800, fontSize: 14 },
 });
