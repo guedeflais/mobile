@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import * as api from "./api";
 import type { MobileUser, NfcTagItem, TransactionItem } from "./api";
 import { clearToken, getToken, setToken } from "./secureStorage";
@@ -8,12 +8,14 @@ interface AuthState {
   user: MobileUser | null;
   balanceCents: number | null;
   transactions: TransactionItem[];
+  transactionsPage: number;
+  transactionsHasMore: boolean;
   nfcTags: NfcTagItem[];
   loginWithPin: (memberNumber: string, pin: string) => Promise<void>;
   loginWithPassword: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshBalance: () => Promise<void>;
-  refreshTransactions: () => Promise<void>;
+  refreshTransactions: (page?: number) => Promise<void>;
   refreshNfcTags: () => Promise<void>;
   addNfcTag: (tagUid: string) => Promise<void>;
   removeNfcTag: (id: string) => Promise<void>;
@@ -28,6 +30,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<MobileUser | null>(null);
   const [balanceCents, setBalanceCents] = useState<number | null>(null);
   const [transactions, setTransactions] = useState<TransactionItem[]>([]);
+  const [transactionsPage, setTransactionsPage] = useState(1);
+  const [transactionsHasMore, setTransactionsHasMore] = useState(false);
+  // Ref plutôt que state pour la page "courante" par défaut : évite que
+  // refreshTransactions change d'identité à chaque changement de page (ce qui
+  // redéclencherait useFocusEffect côté écran, voir app/(tabs)/index.tsx).
+  const transactionsPageRef = useRef(1);
   const [nfcTags, setNfcTags] = useState<NfcTagItem[]>([]);
 
   useEffect(() => {
@@ -39,8 +47,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setTokenState(stored);
           setUser(me.user);
           setBalanceCents(me.balanceCents);
-          const { transactions: items } = await api.fetchTransactions(stored);
-          setTransactions(items);
+          const result = await api.fetchTransactions(stored, 1);
+          setTransactions(result.transactions);
+          setTransactionsPage(result.page);
+          transactionsPageRef.current = result.page;
+          setTransactionsHasMore(result.hasMore);
         } catch {
           await clearToken();
         }
@@ -55,8 +66,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const me = await api.fetchMe(result.token);
     setUser(me.user);
     setBalanceCents(me.balanceCents);
-    const { transactions: items } = await api.fetchTransactions(result.token);
-    setTransactions(items);
+    const txResult = await api.fetchTransactions(result.token, 1);
+    setTransactions(txResult.transactions);
+    setTransactionsPage(txResult.page);
+    transactionsPageRef.current = txResult.page;
+    setTransactionsHasMore(txResult.hasMore);
   }, []);
 
   const handleLoginWithPin = useCallback(
@@ -84,6 +98,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setBalanceCents(null);
     setTransactions([]);
+    setTransactionsPage(1);
+    transactionsPageRef.current = 1;
+    setTransactionsHasMore(false);
     setNfcTags([]);
   }, [token]);
 
@@ -93,11 +110,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setBalanceCents(me.balanceCents);
   }, [token]);
 
-  const refreshTransactions = useCallback(async () => {
-    if (!token) return;
-    const { transactions: items } = await api.fetchTransactions(token);
-    setTransactions(items);
-  }, [token]);
+  const refreshTransactions = useCallback(
+    async (page?: number) => {
+      if (!token) return;
+      const targetPage = page ?? transactionsPageRef.current;
+      const result = await api.fetchTransactions(token, targetPage);
+      setTransactions(result.transactions);
+      setTransactionsPage(result.page);
+      transactionsPageRef.current = result.page;
+      setTransactionsHasMore(result.hasMore);
+    },
+    [token],
+  );
 
   const refreshNfcTags = useCallback(async () => {
     if (!token) return;
@@ -128,7 +152,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!token) throw new Error("Non authentifié.");
       await api.payMerchant(token, merchantCode, amountEuros);
       await refreshBalance();
-      await refreshTransactions();
+      await refreshTransactions(1);
     },
     [token, refreshBalance, refreshTransactions],
   );
@@ -140,6 +164,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         balanceCents,
         transactions,
+        transactionsPage,
+        transactionsHasMore,
         nfcTags,
         loginWithPin: handleLoginWithPin,
         loginWithPassword: handleLoginWithPassword,

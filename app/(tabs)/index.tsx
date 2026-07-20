@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Butterfly } from "../../components/Butterfly";
@@ -68,7 +68,15 @@ function TransactionRow({ item }: { item: TransactionItem }) {
 }
 
 export default function Wallet() {
-  const { user, balanceCents, transactions, refreshBalance, refreshTransactions } = useAuth();
+  const {
+    user,
+    balanceCents,
+    transactions,
+    transactionsPage,
+    transactionsHasMore,
+    refreshBalance,
+    refreshTransactions,
+  } = useAuth();
 
   useFocusEffect(
     useCallback(() => {
@@ -94,6 +102,41 @@ export default function Wallet() {
         </View>
       }
       ListEmptyComponent={<Text style={styles.empty}>Aucune transaction pour l&apos;instant.</Text>}
+      ListFooterComponent={
+        transactionsPage > 1 || transactionsHasMore ? (
+          <View style={styles.pagination}>
+            <Pressable
+              style={[styles.pageButton, transactionsPage <= 1 && styles.pageButtonDisabled]}
+              onPress={() => refreshTransactions(transactionsPage - 1)}
+              disabled={transactionsPage <= 1}
+            >
+              <Ionicons
+                name="chevron-back"
+                size={16}
+                color={transactionsPage <= 1 ? colors.brand300 : colors.brand700}
+              />
+              <Text style={[styles.pageButtonText, transactionsPage <= 1 && styles.pageButtonTextDisabled]}>
+                Précédent
+              </Text>
+            </Pressable>
+            <Text style={styles.pageLabel}>Page {transactionsPage}</Text>
+            <Pressable
+              style={[styles.pageButton, !transactionsHasMore && styles.pageButtonDisabled]}
+              onPress={() => refreshTransactions(transactionsPage + 1)}
+              disabled={!transactionsHasMore}
+            >
+              <Text style={[styles.pageButtonText, !transactionsHasMore && styles.pageButtonTextDisabled]}>
+                Suivant
+              </Text>
+              <Ionicons
+                name="chevron-forward"
+                size={16}
+                color={!transactionsHasMore ? colors.brand300 : colors.brand700}
+              />
+            </Pressable>
+          </View>
+        ) : null
+      }
     />
   );
 }
@@ -129,4 +172,15 @@ const styles = StyleSheet.create({
   rowAmount: { fontSize: 15, fontWeight: "600" },
   rowStatus: { fontSize: 11, marginTop: 2 },
   empty: { textAlign: "center", color: colors.brand300, marginTop: 24 },
+  pagination: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 16,
+  },
+  pageButton: { flexDirection: "row", alignItems: "center", gap: 4, paddingVertical: 8, paddingHorizontal: 4 },
+  pageButtonDisabled: { opacity: 0.4 },
+  pageButtonText: { color: colors.brand700, fontSize: 14, fontWeight: "600" },
+  pageButtonTextDisabled: { color: colors.brand300 },
+  pageLabel: { fontSize: 13, color: colors.brand300 },
 });

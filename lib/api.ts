@@ -76,8 +76,14 @@ export async function logout(token: string): Promise<void> {
   });
 }
 
-export async function fetchTransactions(token: string): Promise<{ transactions: TransactionItem[] }> {
-  const response = await fetch(`${API_BASE_URL}/api/mobile/transactions`, {
+export interface TransactionsResult {
+  transactions: TransactionItem[];
+  page: number;
+  hasMore: boolean;
+}
+
+export async function fetchTransactions(token: string, page = 1): Promise<TransactionsResult> {
+  const response = await fetch(`${API_BASE_URL}/api/mobile/transactions?page=${page}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   return parseOrThrow(response);
