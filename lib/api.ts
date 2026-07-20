@@ -83,6 +83,37 @@ export async function fetchTransactions(token: string): Promise<{ transactions: 
   return parseOrThrow(response);
 }
 
+export interface NfcTagItem {
+  id: string;
+  tagUid: string;
+  createdAt: string;
+}
+
+export async function fetchNfcTags(token: string): Promise<{ tags: NfcTagItem[] }> {
+  const response = await fetch(`${API_BASE_URL}/api/mobile/nfc-tags`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return parseOrThrow(response);
+}
+
+export async function addNfcTag(token: string, tagUid: string): Promise<{ tag: NfcTagItem }> {
+  const response = await fetch(`${API_BASE_URL}/api/mobile/nfc-tags`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ tagUid }),
+  });
+  return parseOrThrow(response);
+}
+
+export async function removeNfcTag(token: string, id: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/api/mobile/nfc-tags/delete`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ id }),
+  });
+  await parseOrThrow(response);
+}
+
 export async function payMerchant(
   token: string,
   merchantCode: string,

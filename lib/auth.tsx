@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import * as api from "./api";
-import type { MobileUser, TransactionItem } from "./api";
+import type { MobileUser, NfcTagItem, TransactionItem } from "./api";
 import { clearToken, getToken, setToken } from "./secureStorage";
 
 interface AuthState {
@@ -8,11 +8,15 @@ interface AuthState {
   user: MobileUser | null;
   balanceCents: number | null;
   transactions: TransactionItem[];
+  nfcTags: NfcTagItem[];
   loginWithPin: (memberNumber: string, pin: string) => Promise<void>;
   loginWithPassword: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshBalance: () => Promise<void>;
   refreshTransactions: () => Promise<void>;
+  refreshNfcTags: () => Promise<void>;
+  addNfcTag: (tagUid: string) => Promise<void>;
+  removeNfcTag: (id: string) => Promise<void>;
   pay: (merchantCode: string, amountEuros: number) => Promise<void>;
 }
 
@@ -24,6 +28,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<MobileUser | null>(null);
   const [balanceCents, setBalanceCents] = useState<number | null>(null);
   const [transactions, setTransactions] = useState<TransactionItem[]>([]);
+  const [nfcTags, setNfcTags] = useState<NfcTagItem[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -79,6 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setBalanceCents(null);
     setTransactions([]);
+    setNfcTags([]);
   }, [token]);
 
   const refreshBalance = useCallback(async () => {
@@ -92,6 +98,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { transactions: items } = await api.fetchTransactions(token);
     setTransactions(items);
   }, [token]);
+
+  const refreshNfcTags = useCallback(async () => {
+    if (!token) return;
+    const { tags } = await api.fetchNfcTags(token);
+    setNfcTags(tags);
+  }, [token]);
+
+  const handleAddNfcTag = useCallback(
+    async (tagUid: string) => {
+      if (!token) throw new Error("Non authentifié.");
+      await api.addNfcTag(token, tagUid);
+      await refreshNfcTags();
+    },
+    [token, refreshNfcTags],
+  );
+
+  const handleRemoveNfcTag = useCallback(
+    async (id: string) => {
+      if (!token) throw new Error("Non authentifié.");
+      await api.removeNfcTag(token, id);
+      await refreshNfcTags();
+    },
+    [token, refreshNfcTags],
+  );
 
   const pay = useCallback(
     async (merchantCode: string, amountEuros: number) => {
@@ -110,11 +140,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         balanceCents,
         transactions,
+        nfcTags,
         loginWithPin: handleLoginWithPin,
         loginWithPassword: handleLoginWithPassword,
         logout: handleLogout,
         refreshBalance,
         refreshTransactions,
+        refreshNfcTags,
+        addNfcTag: handleAddNfcTag,
+        removeNfcTag: handleRemoveNfcTag,
         pay,
       }}
     >

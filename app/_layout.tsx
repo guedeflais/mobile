@@ -9,6 +9,7 @@ export default function RootLayout() {
       <Stack screenOptions={{ headerStyle: { backgroundColor: "#4f8fc0" }, headerTintColor: "#fff" }}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="login" options={{ title: "Connexion" }} />
+        <Stack.Screen name="nfc-tags" options={{ title: "Mes bracelets/cartes NFC" }} />
       </Stack>
     </AuthProvider>
   );
