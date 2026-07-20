@@ -1,5 +1,15 @@
 import { useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { colors } from "../constants/theme";
 import { useAuth } from "../lib/auth";
@@ -35,7 +45,14 @@ export default function Login() {
   }
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.flex}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <ScrollView
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
+      >
       <Text style={styles.title}>Connexion</Text>
 
       <View style={styles.tabs}>
@@ -94,12 +111,14 @@ export default function Login() {
       <Pressable style={styles.button} onPress={handleSubmit} disabled={submitting}>
         {submitting ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Se connecter</Text>}
       </Pressable>
-    </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background, padding: 24, justifyContent: "center" },
+  flex: { flex: 1, backgroundColor: colors.background },
+  container: { flexGrow: 1, backgroundColor: colors.background, padding: 24, justifyContent: "center" },
   title: { fontSize: 24, fontWeight: "600", color: colors.brand700, marginBottom: 24, textAlign: "center" },
   tabs: {
     flexDirection: "row",
