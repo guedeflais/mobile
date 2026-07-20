@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
+import { Butterfly } from "../components/Butterfly";
 import { colors } from "../constants/theme";
 import { useAuth } from "../lib/auth";
 
@@ -28,6 +29,7 @@ export default function Home() {
 
   return (
     <View style={styles.container}>
+      <Butterfly flying={false} />
       <Text style={styles.title}>Bonjour {user.fullName}</Text>
       <Text style={styles.balanceLabel}>Solde disponible</Text>
       <Text style={styles.balance}>{formatGatinelles(balanceCents ?? 0)}</Text>

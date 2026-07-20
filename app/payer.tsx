@@ -11,6 +11,7 @@ import {
   View,
 } from "react-native";
 import { CameraView, useCameraPermissions, type BarcodeScanningResult } from "expo-camera";
+import { Butterfly } from "../components/Butterfly";
 import { colors } from "../constants/theme";
 import { useAuth } from "../lib/auth";
 
@@ -93,7 +94,10 @@ export default function Payer() {
     <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
         <Text style={styles.title}>Payer un commerçant</Text>
-        <Text style={styles.subtitle}>Deux façons de payer :</Text>
+        <View style={styles.subtitleRow}>
+          <Butterfly flying={success !== null} size={44} />
+          <Text style={styles.subtitle}>Deux façons de payer :</Text>
+        </View>
 
         {!scannedViaQr && (
           <View style={styles.section}>
@@ -152,7 +156,8 @@ const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: colors.background },
   container: { flexGrow: 1, padding: 24 },
   title: { fontSize: 22, fontWeight: "600", color: colors.brand700, marginBottom: 4 },
-  subtitle: { fontSize: 14, color: colors.foreground, marginBottom: 16 },
+  subtitleRow: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 16 },
+  subtitle: { fontSize: 14, color: colors.foreground },
   section: { marginBottom: 12 },
   sectionLabel: { fontSize: 13, color: colors.foreground, marginBottom: 6 },
   scanButton: {
