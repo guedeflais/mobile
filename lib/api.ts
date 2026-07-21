@@ -230,3 +230,16 @@ export async function requestCardPurchase(token: string, amountEuros: number): P
   });
   return parseOrThrow(response);
 }
+
+export interface AnnuaireMerchant {
+  businessName: string;
+  address: string;
+  category: string;
+  latitude: number | null;
+  longitude: number | null;
+}
+
+export async function fetchAnnuaire(): Promise<{ merchants: AnnuaireMerchant[] }> {
+  const response = await fetch(`${API_BASE_URL}/api/mobile/annuaire`);
+  return parseOrThrow(response);
+}

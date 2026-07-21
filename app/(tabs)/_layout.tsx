@@ -59,6 +59,14 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="annuaire"
+        options={{
+          title: "Annuaire des commerçants",
+          tabBarLabel: "Commerçants",
+          tabBarIcon: ({ color, size }) => <Ionicons name="storefront-outline" color={color} size={size} />,
+        }}
+      />
+      <Tabs.Screen
         name="compte"
         options={{
           title: "Mon compte",
