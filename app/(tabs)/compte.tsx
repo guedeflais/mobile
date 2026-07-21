@@ -34,12 +34,6 @@ export default function Compte() {
         <Ionicons name="chevron-forward" size={18} color={colors.brand300} />
       </Pressable>
 
-      <Pressable style={styles.linkRow} onPress={() => router.push("/nfc-tags")}>
-        <Ionicons name="radio-outline" size={20} color={colors.brand700} />
-        <Text style={styles.linkText}>Mes bracelets/cartes NFC</Text>
-        <Ionicons name="chevron-forward" size={18} color={colors.brand300} />
-      </Pressable>
-
       <Pressable style={styles.logoutButton} onPress={logout}>
         <Text style={styles.logoutButtonText}>Se déconnecter</Text>
       </Pressable>

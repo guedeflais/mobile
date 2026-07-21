@@ -37,7 +37,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Portefeuille",
+          title: "Mon Compte",
           tabBarIcon: ({ color, size }) => <Ionicons name="wallet-outline" color={color} size={size} />,
         }}
       />
@@ -69,7 +69,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="compte"
         options={{
-          title: "Mon compte",
+          title: "Profil",
           tabBarIcon: ({ color, size }) => <Ionicons name="person-outline" color={color} size={size} />,
         }}
       />
