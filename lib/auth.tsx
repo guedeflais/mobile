@@ -23,6 +23,7 @@ interface AuthState {
   pay: (merchantCode: string, amountEuros: number) => Promise<void>;
   refreshProfile: () => Promise<void>;
   updateProfile: (data: ProfileUpdatePayload) => Promise<void>;
+  requestConversion: (amountEuros: number) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -179,6 +180,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [token, refreshProfile],
   );
 
+  const handleRequestConversion = useCallback(
+    async (amountEuros: number) => {
+      if (!token) throw new Error("Non authentifié.");
+      await api.requestConversion(token, amountEuros);
+      await refreshBalance();
+      await refreshTransactions(1);
+    },
+    [token, refreshBalance, refreshTransactions],
+  );
+
   return (
     <AuthContext.Provider
       value={{
@@ -201,6 +212,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         pay,
         refreshProfile,
         updateProfile,
+        requestConversion: handleRequestConversion,
       }}
     >
       {children}

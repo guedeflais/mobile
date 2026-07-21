@@ -181,3 +181,12 @@ export async function payMerchant(
   });
   return parseOrThrow(response);
 }
+
+export async function requestConversion(token: string, amountEuros: number): Promise<{ id: string }> {
+  const response = await fetch(`${API_BASE_URL}/api/mobile/conversions`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ amountEuros }),
+  });
+  return parseOrThrow(response);
+}

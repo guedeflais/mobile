@@ -12,6 +12,7 @@ export default function RootLayout() {
         <Stack.Screen name="register" options={{ title: "Créer un compte" }} />
         <Stack.Screen name="nfc-tags" options={{ title: "Mes bracelets/cartes NFC" }} />
         <Stack.Screen name="profil" options={{ title: "Modifier mon profil" }} />
+        <Stack.Screen name="reconversion" options={{ title: "Reconversion en euros" }} />
       </Stack>
     </AuthProvider>
   );
