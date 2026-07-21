@@ -13,6 +13,7 @@ import {
 import { useRouter } from "expo-router";
 import { API_BASE_URL } from "../lib/config";
 import { colors } from "../constants/theme";
+import { CategoryPicker } from "../components/CategoryPicker";
 
 type AccountType = "PARTICULIER" | "COMMERCANT";
 type FieldErrors = Record<string, string>;
@@ -248,13 +249,7 @@ export default function Register() {
             </Field>
 
             <Field error={fieldErrors["merchant.category"]}>
-              <TextInput
-                style={styles.input}
-                placeholder="Catégorie (ex. boulangerie, librairie...)"
-                placeholderTextColor={colors.brand300}
-                value={category}
-                onChangeText={setCategory}
-              />
+              <CategoryPicker value={category} onChange={setCategory} />
             </Field>
 
             <Field error={fieldErrors["merchant.iban"]}>
