@@ -13,6 +13,7 @@ import {
 import { useRouter } from "expo-router";
 import { colors } from "../constants/theme";
 import { useAuth } from "../lib/auth";
+import { Butterfly } from "../components/Butterfly";
 
 type Mode = "pin" | "password";
 
@@ -53,6 +54,9 @@ export default function Login() {
         contentContainerStyle={styles.container}
         keyboardShouldPersistTaps="handled"
       >
+      <View style={styles.butterflyWrapper}>
+        <Butterfly flying={false} />
+      </View>
       <Text style={styles.title}>Connexion</Text>
 
       <View style={styles.tabs}>
@@ -123,6 +127,7 @@ export default function Login() {
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: colors.background },
   container: { flexGrow: 1, backgroundColor: colors.background, padding: 24, justifyContent: "center" },
+  butterflyWrapper: { alignItems: "center", marginBottom: 16 },
   title: { fontSize: 24, fontWeight: "600", color: colors.brand700, marginBottom: 24, textAlign: "center" },
   tabs: {
     flexDirection: "row",
