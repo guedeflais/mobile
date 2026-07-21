@@ -190,3 +190,24 @@ export async function requestConversion(token: string, amountEuros: number): Pro
   });
   return parseOrThrow(response);
 }
+
+export type PurchaseMethod = "CASH" | "TRANSFER";
+
+export interface PurchaseResult {
+  id: string;
+  status: TransactionStatus;
+  associationIban?: string | null;
+}
+
+export async function requestPurchase(
+  token: string,
+  amountEuros: number,
+  method: PurchaseMethod,
+): Promise<PurchaseResult> {
+  const response = await fetch(`${API_BASE_URL}/api/mobile/purchases`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ amountEuros, method }),
+  });
+  return parseOrThrow(response);
+}

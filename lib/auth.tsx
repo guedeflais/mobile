@@ -1,6 +1,14 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import * as api from "./api";
-import type { MobileUser, NfcTagItem, ProfileResult, ProfileUpdatePayload, TransactionItem } from "./api";
+import type {
+  MobileUser,
+  NfcTagItem,
+  ProfileResult,
+  ProfileUpdatePayload,
+  PurchaseMethod,
+  PurchaseResult,
+  TransactionItem,
+} from "./api";
 import { clearToken, getToken, setToken } from "./secureStorage";
 
 interface AuthState {
@@ -24,6 +32,7 @@ interface AuthState {
   refreshProfile: () => Promise<void>;
   updateProfile: (data: ProfileUpdatePayload) => Promise<void>;
   requestConversion: (amountEuros: number) => Promise<void>;
+  requestPurchase: (amountEuros: number, method: PurchaseMethod) => Promise<PurchaseResult>;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -190,6 +199,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [token, refreshBalance, refreshTransactions],
   );
 
+  const handleRequestPurchase = useCallback(
+    async (amountEuros: number, method: PurchaseMethod) => {
+      if (!token) throw new Error("Non authentifié.");
+      const result = await api.requestPurchase(token, amountEuros, method);
+      await refreshTransactions(1);
+      return result;
+    },
+    [token, refreshTransactions],
+  );
+
   return (
     <AuthContext.Provider
       value={{
@@ -213,6 +232,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         refreshProfile,
         updateProfile,
         requestConversion: handleRequestConversion,
+        requestPurchase: handleRequestPurchase,
       }}
     >
       {children}

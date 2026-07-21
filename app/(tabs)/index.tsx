@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Butterfly } from "../../components/Butterfly";
 import { colors } from "../../constants/theme";
@@ -68,6 +68,7 @@ function TransactionRow({ item }: { item: TransactionItem }) {
 }
 
 export default function Wallet() {
+  const router = useRouter();
   const {
     user,
     balanceCents,
@@ -98,6 +99,9 @@ export default function Wallet() {
           <Text style={styles.title}>Bonjour {user?.fullName}</Text>
           <Text style={styles.balanceLabel}>Solde disponible</Text>
           <Text style={styles.balance}>{formatGatinelles(balanceCents ?? 0)}</Text>
+          <Pressable style={styles.buyButton} onPress={() => router.push("/acheter")}>
+            <Text style={styles.buyButtonText}>Acheter des gâtinelles</Text>
+          </Pressable>
           <Text style={styles.historyTitle}>Historique</Text>
         </View>
       }
@@ -147,7 +151,15 @@ const styles = StyleSheet.create({
   header: { alignItems: "center", marginBottom: 8 },
   title: { fontSize: 22, fontWeight: "600", color: colors.brand700, marginTop: 12, marginBottom: 24, textAlign: "center" },
   balanceLabel: { fontSize: 14, color: colors.foreground },
-  balance: { fontSize: 40, fontWeight: "700", color: colors.leaf700, marginBottom: 24 },
+  balance: { fontSize: 40, fontWeight: "700", color: colors.leaf700, marginBottom: 16 },
+  buyButton: {
+    backgroundColor: colors.brand700,
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    marginBottom: 24,
+  },
+  buyButtonText: { color: "#fff", fontSize: 14, fontWeight: "600" },
   historyTitle: { alignSelf: "flex-start", fontSize: 16, fontWeight: "600", color: colors.brand800, marginBottom: 8 },
   row: {
     flexDirection: "row",
