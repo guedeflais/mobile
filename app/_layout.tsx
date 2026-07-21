@@ -14,6 +14,7 @@ export default function RootLayout() {
         <Stack.Screen name="profil" options={{ title: "Modifier mon profil" }} />
         <Stack.Screen name="reconversion" options={{ title: "Reconversion en euros" }} />
         <Stack.Screen name="acheter" options={{ title: "Acheter des gâtinelles" }} />
+        <Stack.Screen name="carte-paiement" options={{ title: "Paiement par carte" }} />
       </Stack>
     </AuthProvider>
   );

@@ -8,6 +8,7 @@ import type {
   PurchaseMethod,
   PurchaseResult,
   TransactionItem,
+  Up2PayForm,
 } from "./api";
 import { clearToken, getToken, setToken } from "./secureStorage";
 
@@ -33,6 +34,7 @@ interface AuthState {
   updateProfile: (data: ProfileUpdatePayload) => Promise<void>;
   requestConversion: (amountEuros: number) => Promise<void>;
   requestPurchase: (amountEuros: number, method: PurchaseMethod) => Promise<PurchaseResult>;
+  requestCardPurchase: (amountEuros: number) => Promise<Up2PayForm>;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -209,6 +211,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [token, refreshTransactions],
   );
 
+  const handleRequestCardPurchase = useCallback(
+    async (amountEuros: number) => {
+      if (!token) throw new Error("Non authentifié.");
+      return api.requestCardPurchase(token, amountEuros);
+    },
+    [token],
+  );
+
   return (
     <AuthContext.Provider
       value={{
@@ -233,6 +243,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         updateProfile,
         requestConversion: handleRequestConversion,
         requestPurchase: handleRequestPurchase,
+        requestCardPurchase: handleRequestCardPurchase,
       }}
     >
       {children}

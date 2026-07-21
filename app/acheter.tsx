@@ -10,19 +10,24 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { useRouter } from "expo-router";
 import { colors } from "../constants/theme";
 import { useAuth } from "../lib/auth";
 import type { PurchaseMethod } from "../lib/api";
 
-const METHODS: { value: PurchaseMethod; label: string }[] = [
+type Method = PurchaseMethod | "CARD";
+
+const METHODS: { value: Method; label: string }[] = [
   { value: "CASH", label: "Espèces (comptoir de change)" },
   { value: "TRANSFER", label: "Virement bancaire" },
+  { value: "CARD", label: "Carte bancaire" },
 ];
 
 export default function Acheter() {
-  const { requestPurchase } = useAuth();
+  const router = useRouter();
+  const { requestPurchase, requestCardPurchase } = useAuth();
   const [amount, setAmount] = useState("");
-  const [method, setMethod] = useState<PurchaseMethod>("CASH");
+  const [method, setMethod] = useState<Method>("CASH");
   const [error, setError] = useState<string | null>(null);
   const [confirmation, setConfirmation] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -38,6 +43,12 @@ export default function Acheter() {
 
     setSubmitting(true);
     try {
+      if (method === "CARD") {
+        const form = await requestCardPurchase(amountEuros);
+        router.push({ pathname: "/carte-paiement", params: { form: JSON.stringify(form) } });
+        return;
+      }
+
       const result = await requestPurchase(amountEuros, method);
       if (method === "CASH") {
         setConfirmation(
