@@ -2,6 +2,7 @@
   "expo": {
     "name": "La Gâtinelle",
     "slug": "gatinelle-mobile",
+    "owner": "guedeflais",
     "scheme": "gatinelle",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -19,7 +20,11 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -33,6 +38,12 @@
           "cameraPermission": "La Gâtinelle a besoin de la caméra pour scanner le QR code d'un commerçant."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "6417955f-e296-4a19-baf2-076fc029603c"
+      }
+    }
   }
 }
