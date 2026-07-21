@@ -95,7 +95,9 @@ export default function Wallet() {
       renderItem={({ item }) => <TransactionRow item={item} />}
       ListHeaderComponent={
         <View style={styles.header}>
-          <Butterfly flying={false} />
+          <Pressable onPress={() => router.push("/accueil")}>
+            <Butterfly flying={false} />
+          </Pressable>
           <Text style={styles.title}>Bonjour {user?.fullName}</Text>
           <Text style={styles.balanceLabel}>Solde disponible</Text>
           <Text style={styles.balance}>{formatGatinelles(balanceCents ?? 0)}</Text>
