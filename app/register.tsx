@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -14,6 +14,7 @@ import { useRouter } from "expo-router";
 import { API_BASE_URL } from "../lib/config";
 import { colors } from "../constants/theme";
 import { CategoryPicker } from "../components/CategoryPicker";
+import { Field } from "../components/Field";
 
 type AccountType = "PARTICULIER" | "COMMERCANT";
 type FieldErrors = Record<string, string>;
@@ -46,15 +47,6 @@ async function parseOrThrow(response: Response): Promise<RegisterSuccessPayload>
     );
   }
   return data as RegisterSuccessPayload;
-}
-
-function Field({ children, error }: { children: ReactNode; error?: string }) {
-  return (
-    <View style={styles.field}>
-      {children}
-      {error ? <Text style={styles.fieldError}>{error}</Text> : null}
-    </View>
-  );
 }
 
 export default function Register() {
@@ -297,7 +289,6 @@ const styles = StyleSheet.create({
   tabTextActive: { color: "#fff", fontWeight: "600" },
   row: { flexDirection: "row", gap: 12 },
   rowInput: { flex: 1 },
-  field: { marginBottom: 12 },
   input: {
     backgroundColor: "#fff",
     borderWidth: 1,
@@ -307,7 +298,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.foreground,
   },
-  fieldError: { color: "#b00020", fontSize: 12, marginTop: 4 },
   error: { color: "#b00020", marginBottom: 12, textAlign: "center" },
   button: { backgroundColor: colors.brand700, borderRadius: 8, padding: 14, alignItems: "center" },
   buttonText: { color: "#fff", fontSize: 16, fontWeight: "600" },

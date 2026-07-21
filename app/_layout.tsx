@@ -11,6 +11,7 @@ export default function RootLayout() {
         <Stack.Screen name="login" options={{ title: "Connexion" }} />
         <Stack.Screen name="register" options={{ title: "Créer un compte" }} />
         <Stack.Screen name="nfc-tags" options={{ title: "Mes bracelets/cartes NFC" }} />
+        <Stack.Screen name="profil" options={{ title: "Modifier mon profil" }} />
       </Stack>
     </AuthProvider>
   );

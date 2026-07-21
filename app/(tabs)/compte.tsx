@@ -28,6 +28,12 @@ export default function Compte() {
         </Text>
       </View>
 
+      <Pressable style={styles.linkRow} onPress={() => router.push("/profil")}>
+        <Ionicons name="person-outline" size={20} color={colors.brand700} />
+        <Text style={styles.linkText}>Modifier mon profil</Text>
+        <Ionicons name="chevron-forward" size={18} color={colors.brand300} />
+      </Pressable>
+
       <Pressable style={styles.linkRow} onPress={() => router.push("/nfc-tags")}>
         <Ionicons name="radio-outline" size={20} color={colors.brand700} />
         <Text style={styles.linkText}>Mes bracelets/cartes NFC</Text>

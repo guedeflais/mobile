@@ -120,6 +120,55 @@ export async function removeNfcTag(token: string, id: string): Promise<void> {
   await parseOrThrow(response);
 }
 
+export interface MerchantProfileInfo {
+  businessName: string;
+  address: string;
+  category: string;
+  iban: string;
+}
+
+export interface ProfileResult {
+  fullName: string;
+  email: string;
+  merchant?: MerchantProfileInfo;
+}
+
+export interface ProfileUpdatePayload {
+  fullName: string;
+  email: string;
+  merchant?: MerchantProfileInfo;
+}
+
+export class ProfileUpdateError extends Error {
+  fieldErrors: Record<string, string>;
+  constructor(message: string, fieldErrors: Record<string, string> = {}) {
+    super(message);
+    this.fieldErrors = fieldErrors;
+  }
+}
+
+export async function fetchProfile(token: string): Promise<ProfileResult> {
+  const response = await fetch(`${API_BASE_URL}/api/mobile/profile`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return parseOrThrow(response);
+}
+
+export async function updateProfile(token: string, payload: ProfileUpdatePayload): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/api/mobile/profile`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+  const data = await response.json().catch(() => null);
+  if (!response.ok) {
+    throw new ProfileUpdateError(
+      typeof data?.error === "string" ? data.error : "Impossible de mettre à jour le profil.",
+      data?.fieldErrors ?? {},
+    );
+  }
+}
+
 export async function payMerchant(
   token: string,
   merchantCode: string,

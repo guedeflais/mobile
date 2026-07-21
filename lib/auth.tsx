@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import * as api from "./api";
-import type { MobileUser, NfcTagItem, TransactionItem } from "./api";
+import type { MobileUser, NfcTagItem, ProfileResult, ProfileUpdatePayload, TransactionItem } from "./api";
 import { clearToken, getToken, setToken } from "./secureStorage";
 
 interface AuthState {
@@ -11,6 +11,7 @@ interface AuthState {
   transactionsPage: number;
   transactionsHasMore: boolean;
   nfcTags: NfcTagItem[];
+  profile: ProfileResult | null;
   loginWithPin: (memberNumber: string, pin: string) => Promise<void>;
   loginWithPassword: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -20,6 +21,8 @@ interface AuthState {
   addNfcTag: (tagUid: string) => Promise<void>;
   removeNfcTag: (id: string) => Promise<void>;
   pay: (merchantCode: string, amountEuros: number) => Promise<void>;
+  refreshProfile: () => Promise<void>;
+  updateProfile: (data: ProfileUpdatePayload) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -37,6 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // redéclencherait useFocusEffect côté écran, voir app/(tabs)/index.tsx).
   const transactionsPageRef = useRef(1);
   const [nfcTags, setNfcTags] = useState<NfcTagItem[]>([]);
+  const [profile, setProfile] = useState<ProfileResult | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -102,6 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     transactionsPageRef.current = 1;
     setTransactionsHasMore(false);
     setNfcTags([]);
+    setProfile(null);
   }, [token]);
 
   const refreshBalance = useCallback(async () => {
@@ -157,6 +162,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [token, refreshBalance, refreshTransactions],
   );
 
+  const refreshProfile = useCallback(async () => {
+    if (!token) return;
+    const result = await api.fetchProfile(token);
+    setProfile(result);
+  }, [token]);
+
+  const updateProfile = useCallback(
+    async (data: ProfileUpdatePayload) => {
+      if (!token) throw new Error("Non authentifié.");
+      await api.updateProfile(token, data);
+      await refreshProfile();
+      const me = await api.fetchMe(token);
+      setUser(me.user);
+    },
+    [token, refreshProfile],
+  );
+
   return (
     <AuthContext.Provider
       value={{
@@ -167,6 +189,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         transactionsPage,
         transactionsHasMore,
         nfcTags,
+        profile,
         loginWithPin: handleLoginWithPin,
         loginWithPassword: handleLoginWithPassword,
         logout: handleLogout,
@@ -176,6 +199,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         addNfcTag: handleAddNfcTag,
         removeNfcTag: handleRemoveNfcTag,
         pay,
+        refreshProfile,
+        updateProfile,
       }}
     >
       {children}
