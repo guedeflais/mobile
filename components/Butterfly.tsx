@@ -14,9 +14,15 @@ interface ButterflyProps {
  * Port du papillon SVG du web (src/components/Butterfly.tsx dans
  * gatinelle-app) : battement d'ailes, balancement des antennes et léger
  * mouvement du corps en continu ; envol au succès d'un paiement.
- * react-native-svg n'a pas d'équivalent CSS @keyframes/transform-origin :
- * chaque mouvement est un Animated.Value interpolé en chaîne de transform
- * SVG (translate/scale/skew/rotate autour d'un pivot explicite).
+ * Les transforms sont exprimés via la syntaxe tableau de React Native
+ * (`transform={[{ translateX }, { rotate: "Xdeg" }, ...]}`), pas via des
+ * chaînes SVG interpolées ("translate(...) rotate(...)") : sur Android en
+ * New Architecture, react-native-svg attend un ReadableArray pour ce prop
+ * animé et plante ("String cannot be cast to ReadableArray") si on lui
+ * passe une chaîne — la syntaxe tableau fonctionne sur les deux
+ * plateformes. Le pivot de rotation/skew (équivalent du
+ * translate(x,y)...translate(-x,-y) de la version string) passe par le
+ * prop `origin`, statique donc sans ce risque.
  */
 export function Butterfly({ flying, size = 72 }: ButterflyProps) {
   const wingFlap = useRef(new Animated.Value(0)).current;
@@ -61,39 +67,29 @@ export function Butterfly({ flying, size = 72 }: ButterflyProps) {
     }
   }, [flying, takeoff]);
 
-  const takeoffTransform = takeoff.interpolate({
-    inputRange: [0, 0.4, 1],
-    outputRange: ["translate(0,0) rotate(0)", "translate(30,-40) rotate(-8)", "translate(70,-140) rotate(12)"],
-  });
+  const takeoffTranslateX = takeoff.interpolate({ inputRange: [0, 0.4, 1], outputRange: [0, 30, 70] });
+  const takeoffTranslateY = takeoff.interpolate({ inputRange: [0, 0.4, 1], outputRange: [0, -40, -140] });
+  const takeoffRotate = takeoff.interpolate({ inputRange: [0, 0.4, 1], outputRange: ["0deg", "-8deg", "12deg"] });
   const takeoffOpacity = takeoff.interpolate({ inputRange: [0, 0.4, 1], outputRange: [1, 1, 0] });
+  const takeoffTransform = [
+    { translateX: takeoffTranslateX },
+    { translateY: takeoffTranslateY },
+    { rotate: takeoffRotate },
+  ];
 
-  const leftUpperWingTransform = wingFlap.interpolate({
-    inputRange: [0, 1],
-    outputRange: [
-      "translate(300,0) skewY(0) scale(1,1) translate(-300,0)",
-      "translate(300,0) skewY(4) scale(0.78,1) translate(-300,0)",
-    ],
-  });
-  const rightUpperWingTransform = wingFlap.interpolate({
-    inputRange: [0, 1],
-    outputRange: [
-      "translate(300,0) skewY(0) scale(1,1) translate(-300,0)",
-      "translate(300,0) skewY(-4) scale(0.78,1) translate(-300,0)",
-    ],
-  });
+  const leftWingSkewY = wingFlap.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "4deg"] });
+  const rightWingSkewY = wingFlap.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "-4deg"] });
+  const wingScaleX = wingFlap.interpolate({ inputRange: [0, 1], outputRange: [1, 0.78] });
+  const leftWingTransform = [{ skewY: leftWingSkewY }, { scaleX: wingScaleX }];
+  const rightWingTransform = [{ skewY: rightWingSkewY }, { scaleX: wingScaleX }];
 
-  const bodyTransform = bodyBob.interpolate({
-    inputRange: [0, 1],
-    outputRange: ["translate(0,0)", "translate(0,3)"],
-  });
-  const leftAntennaTransform = antennaSway.interpolate({
-    inputRange: [0, 1],
-    outputRange: ["rotate(0 296 138)", "rotate(3 296 138)"],
-  });
-  const rightAntennaTransform = antennaSway.interpolate({
-    inputRange: [0, 1],
-    outputRange: ["rotate(0 304 138)", "rotate(3 304 138)"],
-  });
+  const bodyTranslateY = bodyBob.interpolate({ inputRange: [0, 1], outputRange: [0, 3] });
+  const bodyTransform = [{ translateY: bodyTranslateY }];
+
+  const leftAntennaRotate = antennaSway.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "3deg"] });
+  const rightAntennaRotate = antennaSway.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "3deg"] });
+  const leftAntennaTransform = [{ rotate: leftAntennaRotate }];
+  const rightAntennaTransform = [{ rotate: rightAntennaRotate }];
 
   return (
     <Svg width={size} height={(size * 500) / 600} viewBox="0 0 600 500">
@@ -123,7 +119,7 @@ export function Butterfly({ flying, size = 72 }: ButterflyProps) {
       </Defs>
 
       <AnimatedG transform={takeoffTransform} opacity={takeoffOpacity}>
-        <AnimatedG transform={leftUpperWingTransform}>
+        <AnimatedG transform={leftWingTransform} origin={[300, 0]}>
           <Path
             d="M300,180 C230,90 130,55 60,80 C15,96 5,150 35,190 C65,230 130,250 190,235 C240,222 280,205 300,180 Z"
             fill="url(#wingGradLeft)"
@@ -148,7 +144,7 @@ export function Butterfly({ flying, size = 72 }: ButterflyProps) {
           />
         </AnimatedG>
 
-        <AnimatedG transform={rightUpperWingTransform}>
+        <AnimatedG transform={rightWingTransform} origin={[300, 0]}>
           <Path
             d="M300,180 C370,90 470,55 540,80 C585,96 595,150 565,190 C535,230 470,250 410,235 C360,222 320,205 300,180 Z"
             fill="url(#wingGradRight)"
@@ -173,7 +169,7 @@ export function Butterfly({ flying, size = 72 }: ButterflyProps) {
           />
         </AnimatedG>
 
-        <AnimatedG transform={leftUpperWingTransform}>
+        <AnimatedG transform={leftWingTransform} origin={[300, 0]}>
           <Path
             d="M300,205 C255,250 200,300 150,305 C110,309 85,280 95,245 C105,212 150,195 200,197 C240,199 275,200 300,205 Z"
             fill="url(#lowerWingGradLeft)"
@@ -186,7 +182,7 @@ export function Butterfly({ flying, size = 72 }: ButterflyProps) {
           <Ellipse cx={180} cy={240} rx={14} ry={10} fill="#8fb8d4" opacity={0.5} />
         </AnimatedG>
 
-        <AnimatedG transform={rightUpperWingTransform}>
+        <AnimatedG transform={rightWingTransform} origin={[300, 0]}>
           <Path
             d="M300,205 C345,250 400,300 450,305 C490,309 515,280 505,245 C495,212 450,195 400,197 C360,199 325,200 300,205 Z"
             fill="url(#lowerWingGradRight)"
@@ -213,6 +209,7 @@ export function Butterfly({ flying, size = 72 }: ButterflyProps) {
           <Circle cx={300} cy={145} r={12} fill="url(#bodyGrad)" stroke="#1c2933" strokeWidth={1} />
           <AnimatedPath
             transform={leftAntennaTransform}
+            origin={[296, 138]}
             d="M296,138 C280,118 260,100 245,90"
             stroke="#2b3d4a"
             strokeWidth={2.5}
@@ -221,6 +218,7 @@ export function Butterfly({ flying, size = 72 }: ButterflyProps) {
           />
           <AnimatedPath
             transform={rightAntennaTransform}
+            origin={[304, 138]}
             d="M304,138 C320,118 340,100 355,90"
             stroke="#2b3d4a"
             strokeWidth={2.5}
