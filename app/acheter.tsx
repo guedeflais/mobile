@@ -69,7 +69,7 @@ export default function Acheter() {
   }
 
   return (
-    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : "height"}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
         <Text style={styles.subtitle}>
           1 gâtinelle = 1 euro. Les gâtinelles achetées sont valables 1 an à compter de leur achat.
