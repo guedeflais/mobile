@@ -8,7 +8,7 @@ import type {
   PurchaseMethod,
   PurchaseResult,
   TransactionItem,
-  Up2PayForm,
+  CardPaymentSession,
 } from "./api";
 import { clearToken, getToken, setToken } from "./secureStorage";
 
@@ -34,7 +34,7 @@ interface AuthState {
   updateProfile: (data: ProfileUpdatePayload) => Promise<void>;
   requestConversion: (amountEuros: number) => Promise<void>;
   requestPurchase: (amountEuros: number, method: PurchaseMethod) => Promise<PurchaseResult>;
-  requestCardPurchase: (amountEuros: number) => Promise<Up2PayForm>;
+  requestCardPurchase: (amountEuros: number) => Promise<CardPaymentSession>;
 }
 
 const AuthContext = createContext<AuthState | null>(null);

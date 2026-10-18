@@ -44,8 +44,8 @@ export default function Acheter() {
     setSubmitting(true);
     try {
       if (method === "CARD") {
-        const form = await requestCardPurchase(amountEuros);
-        router.push({ pathname: "/carte-paiement", params: { form: JSON.stringify(form) } });
+        const session = await requestCardPurchase(amountEuros);
+        router.push({ pathname: "/carte-paiement", params: { redirectUrl: session.redirectUrl } });
         return;
       }
 

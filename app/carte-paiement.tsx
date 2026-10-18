@@ -1,38 +1,22 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { WebView, type WebViewNavigation } from "react-native-webview";
 import { colors } from "../constants/theme";
-import type { Up2PayForm } from "../lib/api";
 
 type Outcome = "succes" | "attente" | "refuse" | "annule";
 
 const OUTCOME_MESSAGES: Record<Outcome, string> = {
-  succes:
-    "Paiement reçu, en cours de validation par Up2Pay. Votre solde sera mis à jour automatiquement dans quelques instants.",
+  succes: "Paiement accepté. Vos gâtinelles ont été ajoutées à votre solde.",
   attente:
-    "Votre paiement est en attente de validation par votre banque. Votre solde sera mis à jour dès que la décision sera connue.",
+    "Votre paiement est en cours de validation. Votre solde sera mis à jour automatiquement dès que la banque aura confirmé.",
   refuse: "Le paiement par carte a été refusé. Vous pouvez réessayer ou choisir un autre moyen de paiement.",
   annule: "Paiement annulé.",
 };
 
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
-function buildAutoSubmitHtml(form: Up2PayForm): string {
-  const inputs = form.fields
-    .map((f) => `<input type="hidden" name="${escapeHtml(f.name)}" value="${escapeHtml(f.value)}" />`)
-    .join("");
-  return `<!DOCTYPE html><html><body onload="document.forms[0].submit()">
-    <form method="POST" action="${escapeHtml(form.actionUrl)}">${inputs}</form>
-  </body></html>`;
-}
-
+// Au retour de la page de paiement CAWL, le serveur (/api/cawl/retour)
+// redirige vers /compte?achat=... ou /acheter?achat=... : on intercepte ces
+// URL pour afficher notre propre écran de résultat au lieu de les charger.
 function extractAchatParam(url: string): Outcome | null {
   const match = url.match(/[?&]achat=([^&#]+)/);
   if (!match) return null;
@@ -45,19 +29,8 @@ function extractAchatParam(url: string): Outcome | null {
 
 export default function CartePaiement() {
   const router = useRouter();
-  const { form: formParam } = useLocalSearchParams<{ form: string }>();
+  const { redirectUrl } = useLocalSearchParams<{ redirectUrl: string }>();
   const [outcome, setOutcome] = useState<Outcome | null>(null);
-
-  const form = useMemo<Up2PayForm | null>(() => {
-    if (!formParam) return null;
-    try {
-      return JSON.parse(formParam) as Up2PayForm;
-    } catch {
-      return null;
-    }
-  }, [formParam]);
-
-  const html = useMemo(() => (form ? buildAutoSubmitHtml(form) : null), [form]);
 
   function handleShouldStart(request: WebViewNavigation | { url: string }): boolean {
     const found = extractAchatParam(request.url);
@@ -66,6 +39,13 @@ export default function CartePaiement() {
       return false;
     }
     return true;
+  }
+
+  // Filet de sécurité : selon la plateforme, une redirection serveur n'appelle
+  // pas toujours onShouldStartLoadWithRequest.
+  function handleNavigationStateChange(navState: WebViewNavigation) {
+    const found = extractAchatParam(navState.url);
+    if (found) setOutcome(found);
   }
 
   if (outcome) {
@@ -79,7 +59,7 @@ export default function CartePaiement() {
     );
   }
 
-  if (!html) {
+  if (!redirectUrl || !redirectUrl.startsWith("https://")) {
     return (
       <View style={styles.resultContainer}>
         <Text style={styles.resultMessage}>Impossible de préparer le paiement.</Text>
@@ -93,8 +73,9 @@ export default function CartePaiement() {
   return (
     <View style={styles.flex}>
       <WebView
-        source={{ html }}
+        source={{ uri: redirectUrl }}
         onShouldStartLoadWithRequest={handleShouldStart}
+        onNavigationStateChange={handleNavigationStateChange}
         startInLoadingState
         renderLoading={() => (
           <View style={styles.loadingOverlay}>

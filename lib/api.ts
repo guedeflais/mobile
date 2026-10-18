@@ -212,17 +212,12 @@ export async function requestPurchase(
   return parseOrThrow(response);
 }
 
-export interface Up2PayField {
-  name: string;
-  value: string;
+// Session de paiement CAWL : l'appli ouvre simplement cette URL dans une WebView.
+export interface CardPaymentSession {
+  redirectUrl: string;
 }
 
-export interface Up2PayForm {
-  actionUrl: string;
-  fields: Up2PayField[];
-}
-
-export async function requestCardPurchase(token: string, amountEuros: number): Promise<Up2PayForm> {
+export async function requestCardPurchase(token: string, amountEuros: number): Promise<CardPaymentSession> {
   const response = await fetch(`${API_BASE_URL}/api/mobile/purchases/card`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
